@@ -34,6 +34,7 @@ def main():
     os.environ['MASTER_PORT'] = str(port)
 
     # Using all available gpus for multi-processing distributed
+    args = parse_args()
     args.gpus = torch.cuda.device_count()
     print("Use gpus ", list(range(args.gpus)))
     args.world_size = args.gpus * args.nodes

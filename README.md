@@ -13,10 +13,10 @@ we mainly want to learn a matching model,
 which "Contextually" measure the alignment between words and images. 
 The terminology "Contextual" emphasize the nature that the sentences (the context) are also taken into consideration.
 
-### Download Data
+### Download Image and Captioning Data
 1. Download MS COCO images:
     ```shell script
-    # MS COCO
+    # MS COCO (Train 13G, Valid 6G)
     mkdir -p data/mscoco
     wget http://images.cocodataset.org/zips/train2014.zip -P data/mscoco
     wget http://images.cocodataset.org/zips/val2014.zip -P data/mscoco
@@ -33,7 +33,7 @@ The terminology "Contextual" emphasize the nature that the sentences (the contex
     wget https://nlp.cs.unc.edu/data/lxmert_data/lxmert/mscoco_minival.json -P data/lxmert/
     ```
 
-### Training Models
+### Training The Cross-Modal Matching Model
 The model has a wide range support of different visn/lang backbones. 
 For visual backbones, the models in torchvision are mostly supported. You might need to handle the last FC layer, 
 because it is written differently in different backbones.
@@ -46,51 +46,66 @@ Running Commands:
 # Run the cross-modal matching model with single-machine multi-processing distributed training
 # Speed: 20 min ~ 30 min / 1 Epoch, 20 Epochs by default.
 bash scripts/run_xmatching.bash 0,1 bert_resnext
-
-# Or you could fine-tune the model 
-# bash finetune_cox.bash
 ```
 
 ## vokenization: Contextualized Retrieval
-This step is a bridge between the cross-modality (words-and-image) matching models (CoR) and 
-language-only pre-training models (CoL).
-The final goal is vokenization, which converts the language tokens to related images 
+The vokenization is a bridge between the cross-modality (words-and-image) matching models (xmatching) and 
+visually-supervised lagnauge models (vlm).
+The final goal is to convert the language tokens to related images 
 (we called them **vokens**).
-We mainly provide preprocessing tools (i.e., feature extraction, tokenization, and vokenization) and
-evaluation tools of previous CoR models here.
-Oveerall, we have four different utils in this stage, the pipeline is:
+These **vokens** enable the visual supervision of the language model.
+We mainly provide pr-eprocessing tools (i.e., feature extraction, tokenization, and vokenization) and
+evaluation tools of previous cross-modal matching models here.
+Here is a diagram of these processes and we next discuss them one-by-one:
 ```
 Extracting Image Features-----> Benchmakring the Matching Models (Optional) --> Vokenization
-Tokenization --------------/
+Downloading Language Data --> Tokenization -->-->--/
 ```
 
-### Evaluating CoX Model and Vokenization
-The evaluation includes two different 
-```bash
-bash scripts/cox_benchmarking.bash 0 bert_resnext
-```
-
-
-### Pure Language Data Preprocessing
-We provide scripts to get the datasets "wiki103", "wiki", and "Book Corpus".
+### Downloading and Pre-processing Pure-Language Data 
+We provide scripts to get the datasets "wiki103" and "wiki".
 We would note them as "XX-cased" or "XX-uncased" where the suffix "cased" / "uncased" only indicates
 the property of the raw text.
-#### Wiki103
-```bash
-bash data/wiki103/get_data_cased.sh
-```
+1. **Wiki103**.
+    ```shell script
+    bash data/wiki103/get_data_cased.sh
+    ```
+2. **English Wikipedia**. 
+The script to download and process wiki data are modified from [XLM](https://github.com/facebookresearch/XLM).
+It will download a 17G file. 
+The speed depends on the networking and it usually takes a couple of hours.
+    ```shell script
+    bash data/wiki/get_data_cased.bash en
+    ```
+    Note: For *RoBERTa*, it requires an untokenized version of wiki (o.w. the results would be much lower), 
+    so please use the following command:
+    ```shell script
+    bash data/wiki/get_data_cased_untokenized.bash en
+    ```
+   
+### Tokenization of Language Data
+We next tokenize the language corpus.
+It first split the paragraphs into sentences and tokenize each sentences 
+according to the tokenizer in the cross-modal matching model.
+It would locally save three files: `{dataset_name}.{tokenizer_name}`, `{dataset_name}.{tokenizer_name}.hdf5`, 
+and `{dataset_name}.{tokenizer_name}.line`.
+Taking the wiki103 dataset as an example, we convert the training file into
+`wiki.train.raw.bert-base-uncased`, `wiki.train.raw.bert-base-uncased.hdf5`, and `wiki.train.raw.bert-base-uncased.line`, 
+and save them under `data/wiki103-cased`.
+The txt file `{dataset_name}.{tokenizer_name}` saves the tokens and each line in this file is the tokens of a line 
+in the original file,
+The hdf5 file `{dataset_name}.{tokenizer_name}.hdf5` stores all the tokens continuously and use
+`{dataset_name}.{tokenizer_name}.line` to index the starting token index of each line.
+The ".line" file has `L+1` lines where `L` is the number of lines in the original files.
+Each line has a range "line[i]" to "line[i+1]" in the hdf5 file.
 
-#### English Wikipedia
-The script to download and process wiki data are copied from [XLM](https://github.com/facebookresearch/XLM)
-```bash
-bash data/wiki/get_data_cased.bash en
-```
 
-Note: For RoBERTa, it requires an untokenized version of wiki, 
-so please use the following command:
-```bash
-bash data/wiki/get_data_cased_untokenized.bash en
-```
+Commands:
+1. Wiki103 (around 10 min)
+    ```shell script
+    bash vokenization/tokenization/tokenize_wiki103_bert.bash 
+    ```
+2. English Wikipedia ()
 
 ### Extracting Image Features
 The image preprocessing first extracts the image features to build the keys for retrieval.
@@ -121,41 +136,16 @@ Commands:
 bash extract_keys.bash 0 bert_resnext 
 ```
 
-### Tokenization
-The language preprocessing next tokenize the language corpus.
-It split the paragraphs into sentences and tokenize each sentences to CoL model specific tokens (w.r.t. RoBERTa tokenization).
-It would locally save three files: `{dset_path}.{tokenizer_name}`, `{dset_path}.{tokenizer_name}.sent`, 
-and `{dset_path}.{tokenizer_name}.dcmt`.
-`{dset_path}.{tokenizer_name}` saves the tokens and each line in this file is the tokens of a sentence.
-`{dset_path}.{tokenizer_name}.sent` saves the starting token index of each sentence, it has `S+1` lines where `S` is the number of sentences.
-Each sentence has tokens from `token[sent[i]: sent[i+1]]`.
-`{dset_path}.{tokenizer_name}.dcmt` saves the starting sentence index of each document, it has `D+1` lines where `D` is the number of documents.
-Each document has sentences from `sent[sent[i]: sent[i+1]]`.
-
-Lastly, `to_hdf5.py` will save the processed tokens to hdf5 files `{dset_path}.{tokenizer_name}.hdf5`, locally.
-The sentences could be directly fetched from this hdf5 files with the index in `.sent`.
-
-```bash
-# Tokenization
-python CoR/preprocess/tokenize_wiki103.py
-python CoR/preprocess/tokenize_wiki_all.py
-python CoR/preprocess/tokenize_bc.py
-
-# Save tokens to hdf5 files.
-python to_hdf5.py       # May need to comment out some datasets.
-```
-
-New tokenization:
-```bash
-cd CoR/preprocess_bert/
-bash tokenize_wiki.bash 
-```
 
 
-### Benchmarking Matching Models
+### Benchmarking Cross-Modal Matching Models
 > Before evaluating, please make sure that `extracting_image_features` and `tokenization` are completed.
 
-We benchmark the performance of CoX models from large scale
+We benchmark the performance of CoX models from large scale.
+The evaluation includes two different metrics: diversity and the retrieval performance.
+```bash
+bash scripts/cox_benchmarking.bash 0 bert_resnext
+```
 
 ### The Vokenization Process
 After all these steps, we could start to vokenize the language corpus.
