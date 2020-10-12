@@ -44,6 +44,8 @@ The list of supporting models is provided in [CoX/model.py]() and could be exten
 Running Commands:
 ```bash
 # Run the cross-modal matching model with single-machine multi-processing distributed training
+# "0,1" indicates using the GPUs 0 and 1.
+# "bert_resnext" is the name of this snapshot and would be saved at snap/xmatching/bert_resnext
 # Speed: 20 min ~ 30 min / 1 Epoch, 20 Epochs by default.
 bash scripts/run_xmatching.bash 0,1 bert_resnext
 ```
@@ -106,6 +108,9 @@ Commands:
     bash vokenization/tokenization/tokenize_wiki103_bert.bash 
     ```
 2. English Wikipedia ()
+    ```shell script
+    bash vokenization/tokenization/tokenize_wiki103_bert.bash 
+    ```
 
 ### Extracting Image Features
 The image preprocessing first extracts the image features to build the keys for retrieval.
