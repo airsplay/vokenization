@@ -1,0 +1,20 @@
+torch
+#==1.4.0
+torchvision
+#==0.5.0
+transformers
+#==2.7.0
+tensorboardX
+
+# For GLUE evaluation
+sklearn
+
+# Fiass supports fast indexing.
+# The code has a torch-implemented GPU indexing, so do not worry if you could not install faiss.
+faiss-gpu>=1.6.3
+
+# Spacy is used in sentence segmentation where the sentences are the input the cross-modality matching model.
+spacy
+
+# A higher h5py version to support h5py.VirtualLayout
+h5py>=2.10.0
