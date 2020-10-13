@@ -23,6 +23,19 @@ The terminology "Contextual" emphasize the nature that the sentences (the contex
     unzip data/mscoco/train2014.zip -d data/mscoco/images/ && rm data/mscoco/train2014.zip
     unzip data/mscoco/val2014.zip -d data/mscoco/images/ && rm data/mscoco/val2014.zip
     ```
+   If you already have COCO image on disk. Save them as 
+    ```shell script
+    data
+      |-- mscoco
+            |-- images
+                 |-- train2014
+                         |-- COCO_train2014_000000000009.jpg
+                         |-- COCO_train2014_000000000025.jpg
+                         |-- ......
+                 |-- val2014
+                         |-- COCO_val2014_000000000042.jpg
+                         |-- ......
+    ```
 
 2. Download captions (split following the LXMERT project):
     ```shell script
@@ -87,20 +100,25 @@ The speed depends on the networking and it usually takes a couple of hours.
    
 ### Tokenization of Language Data
 We next tokenize the language corpus.
-It first split the paragraphs into sentences and tokenize each sentences 
-according to the tokenizer in the cross-modal matching model.
-It would locally save three files: `{dataset_name}.{tokenizer_name}`, `{dataset_name}.{tokenizer_name}.hdf5`, 
-and `{dataset_name}.{tokenizer_name}.line`.
-Taking the wiki103 dataset as an example, we convert the training file into
-`wiki.train.raw.bert-base-uncased`, `wiki.train.raw.bert-base-uncased.hdf5`, and `wiki.train.raw.bert-base-uncased.line`, 
-and save them under `data/wiki103-cased`.
-The txt file `{dataset_name}.{tokenizer_name}` saves the tokens and each line in this file is the tokens of a line 
+It would locally save three files: 
+"$dataset_name.$tokenizer_name", 
+"$dataset_name.$tokenizer_name.hdf5",
+and "$dataset_name.$tokenizer_name.line".
+Taking the wiki103 dataset and BERT tokenizer as an example, 
+we convert the training file into
+```
+data 
+ |-- wiki103-cased 
+        |-- wiki.train.raw.bert-base-uncased
+        |-- wiki.train.raw.bert-base-uncased.hdf5
+        |-- wiki.train.raw.bert-base-uncased.line
+```
+The txt file `wiki.train.raw.bert-base-uncased` saves the tokens and each line in this file is the tokens of a line 
 in the original file,
-The hdf5 file `{dataset_name}.{tokenizer_name}.hdf5` stores all the tokens continuously and use
-`{dataset_name}.{tokenizer_name}.line` to index the starting token index of each line.
+The hdf5 file `wiki.train.raw.bert-base-uncased.hdf5` stores all the tokens continuously and use
+`wiki.train.raw.bert-base-uncased.line` to index the starting token index of each line.
 The ".line" file has `L+1` lines where `L` is the number of lines in the original files.
 Each line has a range "line[i]" to "line[i+1]" in the hdf5 file.
-
 
 Commands:
 1. Wiki103 (around 10 min)
@@ -113,11 +131,36 @@ Commands:
     ```
 
 ### Extracting Image Features
-The image preprocessing first extracts the image features to build the keys for retrieval.
+The image pre-processing extracts the image features to build the keys in the vokenization retrieval process.
 
-We first build a list of image indexes with `CoR/create_image_ids.py`. 
-It is used to unify the image ids in different experiments thus the feature array stored in hdf5 could be universally indexed.
-The image ids are saved under a shared path called `LOCAL_DIR` defined in `CoR/common.py`.
+#### Download the Visual Genome (VG) images
+```shell script
+wget https://cs.stanford.edu/people/rak248/VG_100K_2/images.zip -P data/vg/
+wget https://cs.stanford.edu/people/rak248/VG_100K_2/images2.zip -P data/vg/
+unzip data/vg/images.zip -d data/vg/images && rm data/vg/images.zip
+unzip data/vg/images2.zip -d data/vg/images && rm data/vg/images2.zip
+cd data/vg/images
+mv VG_100K/* .
+mv VG_100K_2/* .
+rm -rf VG_100K VG_100K_2
+cd ../../../
+```
+If you already have Visual Genome image on disk. Save them as 
+```
+data
+|-- vg
+    |-- images
+         |-- 
+         |-- 
+         |-- ......
+```
+    
+#### Build Universal Image Ids
+We first build a list of image indexes with `vokenization/create_image_ids.py`. 
+It is used to unify the image ids in different experiments 
+thus the feature array stored in hdf5 could be universally indexed.
+The image ids are saved under a shared path called `LOCAL_DIR` (default to `data/vokenization`)
+ defined in `vokenization/common.py`.
 The path is used to save meta info for the retrieval and we will make sure all the experiments agree with this meta info,
 so that we would not get different indexing in different retrieval experiments.
 The image ids are saved under `{LOCAL_DIR}/images` with format `{IMAGE_SET}_ids.txt`.
@@ -129,16 +172,20 @@ The image ids are saved under `{LOCAL_DIR}/images` with format `{IMAGE_SET}_ids.
 Commands:
 ```bash
 # Step 1, Build image orders.
-python col/cor/build_image_orders.py  
+python vokenization/build_image_orders.py  
 ```
-Extract image features regarding the list built above, using code `CoR/extract_vision_keys.py`. 
-The code will first read the image ids saved in `{LOCAL_DIR}/images/{IMAGE_SET}_ids.txt` and locate the images.
-The features will be saved under `{LOAD}/keys/coco_minival.hdf5`.
+
+#### Extracting Image Features
+
+Extract image features regarding the list built above, using code `vokenization/extract_vision_keys.py`. 
+The code will first read the image ids saved in `data/vokenization/images/{IMAGE_SET}_ids.txt` and locate the images.
+The features will be saved under `snap/xmatching/bert_resnext/keys/{IMAGE_SET}.hdf5`.
+
 Commands:
 ```bash
 # Step 2, Extract features. 
-# bash extract_keys.bash $GPU_ID $MODEL_NAME 
-bash extract_keys.bash 0 bert_resnext 
+# bash scripts/extract_keys.bash $GPU_ID $MODEL_NAME 
+bash scripts/extract_keys.bash 0 bert_resnext 
 ```
 
 
