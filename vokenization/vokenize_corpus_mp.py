@@ -197,6 +197,7 @@ def segment_sent(
 
     sent_starts = [0]
     now = 0
+    print("Now, split lines into sentences with Spacy:")
     for i in tqdm.tqdm(range(len(line_starts) - 1)):
         start_token_idx = line_starts[i]
         end_token_idx = line_starts[i + 1]

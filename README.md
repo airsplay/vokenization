@@ -3,8 +3,10 @@
 PyTorch code for the EMNLP 2020 paper "Vokenization: Improving Language Understanding with Contextualized, 
 Visual-Grounded Supervision".
 
-*Outline*
+**Outline**
 * [Contextualized Cross-Modal Matching](#contextualized-cross-modal-matching-xmatching)
+    * [Downloading Image and Captioning Data](#download-image-and-captioning-data)
+    * [Model Training](#training-the-cross-modal-matching-model)
 * [Vokenization](#vokenization-vokenization)
     * [Preparing Pure Language Data](#downloading-and-pre-processing-pure-language-data)
     * [Extracting Visual Features](#extracting-image-features)
@@ -294,11 +296,11 @@ cd apex
 pip install -v --no-cache-dir --global-option="--cpp_ext" --global-option="--cuda_ext" ./
 ```
 After that, you could bring the option `--fp16` and `--fp16_opt_level O2` back in 
-the script `scripts/small_vlm_wiki103_glue.bash`.
+the script `scripts/small_vlm_wiki103.bash`.
 I recommend to use `--fp16_opt_level O2`.
 Although the option O2 might be [unstable](https://github.com/NVIDIA/apex/issues/818#issuecomment-639012282),
-it saves memory.
-The per-gpu-batch-size is 32 with O1 but 64 with O2.
+it saves a lot memory:
+the max per-gpu-batch-size is 32 with O1 but 64 with O2.
 
 #### English Wikipedia
 After the [vokenization process](#the-vokenization-process) of wiki103,
@@ -343,19 +345,21 @@ python download_glue_data.py --data_dir data/glue --tasks all
 ```
 
 #### Finetuning on GLUE Tasks
+The pre-trained snapshots are evaluated by fine-tuning them on the [GLUE](https://gluebenchmark.com/) 
+benchmark.
+The code are modified from the huggingface [transformers](https://github.com/huggingface/transformers).
 
-1. Running GLUE evaluation for multiple snapshots:
-    ```bash
-    # bash scripts/run_glue_epochs.bash $GPUS #SNAP_PATH --snaps $NUM_OF_SNAPS                            
-    bash scripts/run_glue_epochs.bash 0,1,2,3 snap/vlm/wiki103_bert_small --snaps 7                            
-    ```
-    It will assess 7 snaps using all 0,1,2,3 GPUs. 
-    Setting `snaps=-1` will assess all checkpoints.
-2. Running GLUE evaluation for one snapshots:
-    ```shell script
-    # bash scripts/run_glue_at_epoch.bash $GPUs $NUM_of_Finetuning_Epochs $SNAP_PATH $CHECKPOINT_NAME
-    bash scripts/run_glue_at_epoch.bash 3 3 snap/vlm/wiki103_bert_small checkpoint-epoch0001
-    ```
+Running GLUE evaluation for snapshots from different epochs:
+```bash
+# bash scripts/run_glue_epochs.bash $GPUS #SNAP_PATH --snaps $NUM_OF_SNAPS                            
+bash scripts/run_glue_epochs.bash 0,1,2,3 snap/vlm/wiki103_bert_small --snaps 7                            
+```
+It will assess 7 snaps using all 0,1,2,3 GPUs. 
+Setting `snaps=-1` will assess all checkpoints.
+If you just want to evaluate the last (usually the best) snapshot, please use:
+```
+bash scripts/run_glue_epochs.bash 0 snap/vlm/wiki103_bert_small --snaps 1
+```
 
 #### Showing the results
 For all results saved under `snap/` (whatever the dir names),
@@ -383,18 +387,23 @@ We also provide pure language-model pre-training as baselines.
 bash scripts/small_wiki103.bash 0,1,2,3 bert_small
 ```
 It will run a BERT-6Layers-512Hiddens model on [wiki103](https://blog.einstein.ai/the-wikitext-long-term-dependency-language-modeling-dataset/)
-dataset with the maked language model only.
+dataset with the masked language model only.
 The snapshot will be saved to `snap/bert/wiki103_bert_small`.
 
-Or you could direclty using the script `small_wiki103_glue.bash` to 
+Or you could directly using the script `small_wiki103_glue.bash` to 
 enable GLUE evaluation after finishing pre-training.
 ```shell script
 bash scripts/small_wiki103_glue.bash 0,1,2,3 bert_small
 ```
 
-
 #### English Wikipedia
+Command:
 ```shell script
-# bash scripts/small_wiki103.bash $GPUs $SNAP_NAME
-bash scripts/small_wiki103.bash 0,1,2,3 bert_small
+# bash scripts/base_wiki.bash $GPUs $SNAP_NAME
+bash scripts/base_wiki.bash 0,1,2,3 bert_wiki
+```
+
+With GLUE evaluation:
+```shell script
+bash scripts/base_wiki_glue.bash 0,1,2,3 bert_wiki
 ```
