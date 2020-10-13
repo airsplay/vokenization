@@ -3,6 +3,7 @@
 PyTorch code for the EMNLP 2020 paper "Vokenization: Improving Language Understanding with Contextualized, 
 Visual-Grounded Supervision".
 
+
 ```shell script
 pip install -r requirements.txt
 ```
@@ -241,34 +242,22 @@ Commands
 bash scripts/small_wiki103.bash 0,1 bert_small
 ```
 
-### RoBERTa Pre-Training
 
-### GLUE Fine-Tuning
-#### Evaluate the last checkpoint
-By running
-```bash
-bash run_glue.bash 0 3
-```
-Run GLUE on GPU 0 for 3 epochs, then using
-```bash
-python CoL/show_glue_results.py
-```
-to check the GLUE results.
 
-### BERT (As baselines)
 
-#### Wiki103
-```shell script
-bash scripts/small_vlm_wiki103_glue.bash 0,1,2,3 bert_small
-```
 
 
 ### VLM
 
 #### Wiki103
+Command:
 ```shell script
-bash scripts/small_vlm_wiki103_glue.bash 0,1,2,3 bert_small
+# bash scripts/small_vlm_wiki103_glue.bash $GPUs $SNAP_NAME
+bash scripts/small_vlm_wiki103.bash 0,1,2,3 wiki103_bert_small
 ```
+It will run a BERT-6Layers-512Hiddens model on [wiki103](https://blog.einstein.ai/the-wikitext-long-term-dependency-language-modeling-dataset/)
+dataset with the support of voken supervisions.
+The snapshot will be saved to `snap/vlm/wiki103_bert_small`.
 
 To support the mixed precision pre-training, please install the [nvidia/apex](https://github.com/NVIDIA/apex) library.
 ```shell script
@@ -283,19 +272,68 @@ Although the option O2 might be [unstable](https://github.com/NVIDIA/apex/issues
 it saves memory.
 The per-gpu-batch-size is 32 with O1 but 64 with O2.
 
+#### Wiki English
 
 
+### GLUE Evaluation
+We defautly use the [GLUE](https://gluebenchmark.com/) benchmark
+(e.g., [SST](https://nlp.stanford.edu/sentiment/index.html),
+[MRPC](https://www.microsoft.com/en-us/download/details.aspx?id=52398),
+[QQP](https://www.quora.com/q/quoradata/First-Quora-Dataset-Release-Question-Pairs),
+[MNLI](https://cims.nyu.edu/~sbowman/multinli/),
+[QNLI](https://rajpurkar.github.io/SQuAD-explorer/),)
+ as downstreaming tasks.
+Other tasks could be evaluated following the setup [here](https://github.com/huggingface/transformers/tree/28d183c90cbf91e94651cf4a655df91a52ea1033/examples)
+by changing the option `--model_name_or_path` to the correct snapshot path `snap/bert/wiki103`.
 
-#### Evaluate multiple checkpoints
-
-By running
-```bash
-bash run_glue_epochs.bash 0,1,2,3 --snaps 7                            
+#### Download GLUE dataset
+This downloaindg scrip is copied from [huggingface transformers](https://github.com/huggingface/transformers/tree/master/examples/text-classification)
+project.
+Since the [transformers](https://github.com/huggingface/transformers) is still under dense
+development, the change of APIs might affect the code. 
+I have upgraded the code compaticability to transformers==3.3.
+```shell script
+wget https://raw.githubusercontent.com/huggingface/transformers/master/utils/download_glue_data.py
+python download_glue_data.py --data_dir data/glue --tasks all
 ```
-It will assess 7 snaps using all 0,1,2,3 GPUs. 
-`snaps=-1` will assess all checkpoints.
-Then using 
+
+#### Finetuning on GLUE Tasks
+
+1. Running GLUE evaluation for multiple snapshots:
+    ```bash
+    # bash scripts/run_glue_epochs.bash $GPUS #SNAP_PATH --snaps $NUM_OF_SNAPS                            
+    bash scripts/run_glue_epochs.bash 0,1,2,3 snap/vlm/wiki103_bert_small --snaps 7                            
+    ```
+    It will assess 7 snaps using all 0,1,2,3 GPUs. 
+    Setting `snaps=-1` will assess all checkpoints.
+2. Running GLUE evaluation for one snapshots:
+    ```shell script
+    # bash scripts/run_glue_at_epoch.bash $GPUs $NUM_of_Finetuning_Epochs $SNAP_PATH $CHECKPOINT_NAME
+    bash scripts/run_glue_at_epoch.bash 3 3 snap/vlm/wiki103_bert_small checkpoint-epoch0001
+    ```
+
+#### Showing the results
+For all results saved under `snap/` (whatever the dir names),
+running the folloing command will print out all the results.
 ```bash
-python CoL/show_glue_results_epochs.py 
+python vlm/show_glue_results_epochs.py 
 ```
-to check all glue_results.
+
+Results like
+```
+snap/vlm/test_finetune/glueepoch_checkpoint-epoch0019
+     RTE    MRPC   STS-B    CoLA   SST-2    QNLI     QQP    MNLI MNLI-MM    GLUE
+   54.51   84.72   87.18   52.32   90.02   88.36   87.16   81.92   82.57   78.75
+snap/vlm/bert_6L_512H_wiki103_sharedheadctr_noshuffle/glueepoch_checkpoint-epoch0029
+     RTE    MRPC   STS-B    CoLA   SST-2    QNLI     QQP    MNLI MNLI-MM    GLUE
+   58.12   82.76   84.45   26.74   89.56   84.40   86.52   77.56   77.99   74.23
+```
+
+### BERT (As baselines)
+
+#### Wiki103
+```shell script
+bash scripts/small_vlm_wiki103_glue.bash 0,1,2,3 bert_small
+```
+
+

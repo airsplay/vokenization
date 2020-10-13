@@ -361,6 +361,9 @@ def train(args, train_dataset, model: PreTrainedModel, tokenizer: PreTrainedToke
             else:
                 loss.backward()
 
+            if step == 10:
+                break
+
             tr_loss += loss.item()
             if (step + 1) % args.gradient_accumulation_steps == 0:
                 if args.max_grad_norm > 0.:
@@ -398,9 +401,10 @@ def train(args, train_dataset, model: PreTrainedModel, tokenizer: PreTrainedToke
             checkpoint_name = "checkpoint-epoch%04d" % epoch
             save_model(args, checkpoint_name, model, tokenizer, optimizer, scheduler)
             last_path = os.path.join(args.output_dir, 'checkpoint-last')
-            if os.path.exists(last_path):
-                os.remove(last_path)
-            os.symlink(os.path.join(args.output_dir, checkpoint_name), last_path)
+            # if os.path.exists(last_path):
+            #     print(last_path)
+            #     os.remove(last_path)
+            # os.symlink(os.path.join(args.output_dir, checkpoint_name), last_path)
 
             # Evaluate the model
             logger.info(" Training loss of Epoch %d: %0.4f" % (epoch, tr_loss / step))
