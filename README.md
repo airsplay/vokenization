@@ -4,6 +4,7 @@ PyTorch code for the EMNLP 2020 paper "Vokenization: Improving Language Understa
 Visual-Grounded Supervision".
 
 
+## Preliminary
 ```shell script
 pip install -r requirements.txt
 ```
@@ -48,21 +49,33 @@ The terminology "Contextual" emphasize the nature that the sentences (the contex
     ```
 
 ### Training the Cross-Modal Matching Model
-The model has a wide range support of different visn/lang backbones. 
-For visual backbones, the models in torchvision are mostly supported. You might need to handle the last FC layer, 
-because it is written differently in different backbones.
-For language backbones, we utilize the models in [pytorch.transformers](https://github.com/huggingface/transformers).
-The list of supporting models is provided in [CoX/model.py]() and could be extended following the guidelines in
-[pytorch.transformers](https://github.com/huggingface/transformers).
+The model is trained on MS COCO with pairwise hinge loss (details in Sec. 3.2 of the paper).
 
 Running Commands:
 ```bash
 # Run the cross-modal matching model with single-machine multi-processing distributed training
 # "0,1" indicates using the GPUs 0 and 1.
 # "bert_resnext" is the name of this snapshot and would be saved at snap/xmatching/bert_resnext
+# "--visn resnext101_32x8d" is the vision backbone
+# "--lang bert" is the langaugae backbone
 # Speed: 20 min ~ 30 min / 1 Epoch, 20 Epochs by default.
-bash scripts/run_xmatching.bash 0,1 bert_resnext
+bash scripts/run_xmatching.bash 0,1 bert_resnext --visn resnext101_32x8d --lang bert
 ```
+The options `--visn` and `--lang` specify the architecture of the encoder.
+Tested options 
+```
+--visn $VISN_MODEL
+VISN_MODEL={resnet18, resnet34, resnet50, resnet101, resnet152, 
+            wide_resnet50_2, wide_resnet101_2, resnext101_32x8d (default), ...} 
+--lang $LANG_MODEL
+LANG_MODEL={bert, roberta, xlnet, bert-large, ...}
+```
+For visual backbones, the models in [torchvision](https://pytorch.org/docs/stable/torchvision/models.html) are mostly supported.
+You might need to handle the last FC layer, because it is written differently in different backbones.
+The language backbones are initialized from huggingface [transformers](https://github.com/huggingface/transformers).
+
+> We found that the results with XLNet is pretty low but have not identified 
+> the reason. Results of other backbones are similar.
 
 ## Vokenization (vokenization)
 The vokenization is a bridge between the cross-modality (words-and-image) matching models (xmatching) and 
@@ -279,7 +292,7 @@ The per-gpu-batch-size is 32 with O1 but 64 with O2.
 After the [vokenization process](#the-vokenization-process) of wiki103,
 we could run the model with command:
 ```shell script
-# bash scripts/small_vlm_wiki_glue.bash $GPUs $SNAP_NAME
+# bash scripts/base_vlm_wiki.bash $GPUs $SNAP_NAME
 bash scripts/base_vlm_wiki.bash 0,1,2,3 wiki_bert_base
 ```
 It will run a BERT-12Layers-768Hiddens (same as BERT_BASE) model on the English Wikipedia

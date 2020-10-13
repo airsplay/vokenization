@@ -63,7 +63,7 @@ def parse_args():
     parser.add_argument("--fp16", action='store_true')
 
     # Model Hyper-parameters
-    parser.add_argument('--visn', type=str, default='resnet101', help='The vision backbone model.')
+    parser.add_argument('--visn', type=str, default='resnext101_32x8d', help='The vision backbone model.')
     parser.add_argument('--lang', type=str, default='bert', help='The language backbone model.')
     parser.add_argument('--lang-layers', type=str, default='-1', help='The language backbone model.')
     parser.add_argument('--dim', type=int, default=64, help='The output dim of the joint emb.')

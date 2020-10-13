@@ -62,6 +62,9 @@ class VisnModel(nn.Module):
             for param in module.parameters():
                 param.requires_grad = False
 
+        print(f"Visn Model: {arch}, Finetune: {finetuning}, Pre-trained: {pretrained}")
+        print(f"Visn Model: backbone dim {backbone_dim} --> output dim {dim}")
+
         # Setup follow-up layers
         self.mlp = nn.Sequential(
             nn.Linear(backbone_dim, 256),
@@ -114,9 +117,9 @@ class LangModel(nn.Module):
         self.backbone = bert
         self.layers = sorted(layers)
 
-        print("Language Model: %s with weight %s." % (arch, weight))
-        print("Language Model: using layers %s, result in %d dims." % (
-            self.layers, backbone_dim * len(self.layers)))
+        print(f"Language Model: {arch} with weight {weight}; Fine-tuning: {finetuning}, Pre-trained: {pretrained}.")
+        print(f"Language Model: using layers {self.layers}, result in backbone dim {backbone_dim * len(self.layers)} "
+              f"--> output dim {dim}.")
 
         # Setup follow-up layers
         self.mlp = nn.Sequential(
@@ -154,7 +157,11 @@ class LangModel(nn.Module):
             output, pooled_output, hidden_states = x[:3]
 
         # gather the layers
-        x = torch.cat(list(hidden_states[layer] for layer in self.layers), -1)
+        if type(self.backbone) is XLNetModel:
+            x = torch.cat(list(hidden_states[layer].permute(1, 0, 2) for layer in self.layers), -1)
+        else:
+            x = torch.cat(list(hidden_states[layer] for layer in self.layers), -1)
+
         if not self.finetuning:
             x = x.detach()
 
