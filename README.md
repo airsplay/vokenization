@@ -24,7 +24,7 @@ The terminology "Contextual" emphasize the nature that the sentences (the contex
     unzip data/mscoco/val2014.zip -d data/mscoco/images/ && rm data/mscoco/val2014.zip
     ```
    If you already have COCO image on disk. Save them as 
-    ```shell script
+    ```
     data
       |-- mscoco
             |-- images
@@ -150,8 +150,8 @@ If you already have Visual Genome image on disk. Save them as
 data
 |-- vg
     |-- images
-         |-- 
-         |-- 
+         |-- 1000.jpg
+         |-- 1001.jpg
          |-- ......
 ```
     
@@ -189,14 +189,13 @@ bash scripts/extract_keys.bash 0 bert_resnext
 ```
 
 
-
-### Benchmarking Cross-Modal Matching Models
+### Benchmarking Cross-Modal Matching Models (Optional)
 > Before evaluating, please make sure that `extracting_image_features` and `tokenization` are completed.
 
-We benchmark the performance of CoX models from large scale.
+We benchmark the performance of cross-modal matching models from large scale.
 The evaluation includes two different metrics: diversity and the retrieval performance.
 ```bash
-bash scripts/cox_benchmarking.bash 0 bert_resnext
+bash scripts/xmatching_benchmark.bash 0 bert_resnext
 ```
 
 ### The Vokenization Process
