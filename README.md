@@ -7,7 +7,7 @@ Visual-Grounded Supervision".
 pip install -r requirements.txt
 ```
 
-## xmatching: Contextualized Cross-Modal Matching
+## Contextualized Cross-Modal Matching (xmatching)
 In this module (corresponding to Sec 3.2 of the paper), 
 we mainly want to learn a matching model, 
 which "Contextually" measure the alignment between words and images. 
@@ -63,7 +63,7 @@ Running Commands:
 bash scripts/run_xmatching.bash 0,1 bert_resnext
 ```
 
-## vokenization: Contextualized Retrieval
+## Vokenization (vokenization)
 The vokenization is a bridge between the cross-modality (words-and-image) matching models (xmatching) and 
 visually-supervised lagnauge models (vlm).
 The final goal is to convert the language tokens to related images 
@@ -88,7 +88,7 @@ the property of the raw text.
 2. **English Wikipedia**. 
 The script to download and process wiki data are modified from [XLM](https://github.com/facebookresearch/XLM).
 It will download a 17G file. 
-The speed depends on the networking and it usually takes a couple of hours.
+The speed depends on the networking and it usually takes several hours to filter the data.
     ```shell script
     bash data/wiki/get_data_cased.bash en
     ```
@@ -200,40 +200,36 @@ bash scripts/xmatching_benchmark.bash 0 bert_resnext
 
 ### The Vokenization Process
 After all these steps, we could start to vokenize the language corpus.
-It would load the tokens saved in `{corpus}.{tokenizer_name}.hdf5` 
-and uses the sentence info in `{corpus}.{tokenzier_name}.hdf5`.
+It would load the tokens saved in `dataset_name.tokenizer_name.hdf5` 
+and uses the line-split information in `dataset_name.tokenzier_name.line`.
 
-The code is highly optimized and could be continued by just rerunning it.
-The vokens will be saved in `{load}/vokens/wiki.train.raw.vg_nococo.hdf5` by default.
-The file `{load}/vokens/wiki.train.raw.vg_nococo` contains the line-split vokens.
-If you want to change the voken's output dir, please specify the option `--output`.
+The code is optimized and could be continued by just rerunning it.
+The vokens will be saved in `snap/xmatching/bert_resnext/vokens/wiki.train.raw.vg_nococo.hdf5` by default.
+The file `snap/xmatching/bert_resnext/vokens/wiki.train.raw.vg_nococo.ids` contains the universal image ids 
+for each voken, 
+e.g., the image id `vg_nococo/8` corresponds to 8-th feature
+saved in `snap/xmatching/bert_resnext/keys/vg_nococo.hdf5`.
 
-```bash
-python CoR/vokenize_corpus.py \
---load /ssd-playpen/home/hTan/CoL/CoX/snap/pretrain/robertal4_finetune_from_pretrained \
---corpus=/ssd-playpen/data/wiki103/wiki.train.raw \
---image-sets=vg_nococo \
---tokenizer-name=roberta-base   # The tokenizer-name must be provided!
-```
 
 > Note: `--tokenizer-name` must be provided in the script.
 > Moreover, please make sure that the tokens are extracted from [tokenization](#tokenization)
 
-For the wiki and wiki103, use the following script:
-#### Wiki103
-First modifying the `LOAD=/ssd-playpen/home/hTan/CoL/CoX/snap/pretrain/cc_hinge05_dim64_resxt101_robertal4` in `vokenize_wiki103.bash`
-to the saved CoX model.
-```bash
-bash vokenize_wiki103.bash 0
-```
-#### Wiki (all)
-```bash
-bash mpvokenize_wiki.bash 0,1,2,3
-```
+
+Commands
+1. Wiki103
+    ```shell script
+    # bash scripts/mpvokenize_wiki103.bash $USE_GPUS $SNAP_NAME
+    bash scripts/mpvokenize_wiki103.bash 0,1,2,3 bert_resnext
+    ```
+2. English Wikipedia
+    ```shell script
+    # bash scripts/mpvokenize_wiki.bash $USE_GPUS $SNAP_NAME
+    bash scripts/mpvokenize_wiki.bash 0,1,2,3 bert_resnext
+    ```
 
 
 
-## vlm: Visually-Supervised Language Model
+## Visually-Supervised Language Model (vlm)
 
 ### RoBERTa Pre-Training
 

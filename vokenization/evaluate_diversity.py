@@ -19,10 +19,6 @@ imgset2fname = {
     'cc_valid': 'validation.tsv',
 }
 
-corpus2fpath = {
-    'wiki103': '/ssd-playpen/data/col/wiki103-cased/wiki.valid.raw'
-}
-
 tokenizer_name = 'bert-base-uncased'
 
 
@@ -30,7 +26,7 @@ def load_lang_data(corpus_name, topk=10000):
     """
     Load {topk} sentences from the corpus named by {corpus_name}.
     """
-    fpath = corpus2fpath[corpus_name] + '.' + tokenizer_name
+    fpath = corpus_name + '.' + tokenizer_name
     tokens = []
     with open(fpath) as f:
         for i, line in enumerate(f):
