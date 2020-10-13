@@ -224,6 +224,7 @@ saved in `snap/xmatching/bert_resnext/keys/vg_nococo.hdf5`.
 Commands
 1. Wiki103
     ```shell script
+    # Note: mp is the abbreviation for "multi-processing"
     # bash scripts/mpvokenize_wiki103.bash $USE_GPUS $SNAP_NAME
     bash scripts/mpvokenize_wiki103.bash 0,1,2,3 bert_resnext
     ```
@@ -237,20 +238,16 @@ Commands
 
 ## Visually-Supervised Language Model (vlm)
 
-### Test the Running
-```shell script
-bash scripts/small_wiki103.bash 0,1 bert_small
-```
+### Pre-Training with VLM
+As discussed in Sec. 2 of the paper,
+we use visually-supervised language model to pre-train the model 
+with visual supervision.
+The visual supervision comes from the previous 
+vokenization process.
 
-
-
-
-
-
-### VLM
-
-#### Wiki103
-Command:
+#### Wiki103 
+After the [vokenization process](#the-vokenization-process) of wiki103,
+we could run the model with command:
 ```shell script
 # bash scripts/small_vlm_wiki103_glue.bash $GPUs $SNAP_NAME
 bash scripts/small_vlm_wiki103.bash 0,1,2,3 wiki103_bert_small
@@ -258,8 +255,14 @@ bash scripts/small_vlm_wiki103.bash 0,1,2,3 wiki103_bert_small
 It will run a BERT-6Layers-512Hiddens model on [wiki103](https://blog.einstein.ai/the-wikitext-long-term-dependency-language-modeling-dataset/)
 dataset with the support of voken supervisions.
 The snapshot will be saved to `snap/vlm/wiki103_bert_small`.
+We recommend to run this Wiki103 experiment first since it will finish 
+in a reasonable time (half a day).
+The pure BERT pre-training option is also available [later](#bert-as-baselines)
+for comparisons.
 
-To support the mixed precision pre-training, please install the [nvidia/apex](https://github.com/NVIDIA/apex) library.
+Note: defautly, the mixed-precision training is not used.
+To support the mixed precision pre-training, 
+please install the [nvidia/apex](https://github.com/NVIDIA/apex) library.
 ```shell script
 git clone https://github.com/NVIDIA/apex
 cd apex
@@ -272,7 +275,24 @@ Although the option O2 might be [unstable](https://github.com/NVIDIA/apex/issues
 it saves memory.
 The per-gpu-batch-size is 32 with O1 but 64 with O2.
 
-#### Wiki English
+#### English Wikipedia
+After the [vokenization process](#the-vokenization-process) of wiki103,
+we could run the model with command:
+```shell script
+# bash scripts/small_vlm_wiki_glue.bash $GPUs $SNAP_NAME
+bash scripts/base_vlm_wiki.bash 0,1,2,3 wiki_bert_base
+```
+It will run a BERT-12Layers-768Hiddens (same as BERT_BASE) model on the English Wikipedia
+dataset with the support of voken supervisions.
+The snapshot will be saved to `snap/vlm/wiki_bert_base`.
+
+It takes around 3~5 days on 4 Titan V / GTX 2080
+and around 5~7 days to finish in 4 Titan Pascal/T4 cards.
+(This estimation is accurate since I inevitably run experiments on all these servers...).
+Titan V / 2080 / T4 have native support of mixed precision training (triggered by `--fp16` option and need
+installing [apex](https://github.com/NVIDIA/apex)).
+The speed would be much faster.
+Titan Pascal would also save some memory with the `--fp16` option.
 
 
 ### GLUE Evaluation
@@ -319,7 +339,7 @@ running the folloing command will print out all the results.
 python vlm/show_glue_results_epochs.py 
 ```
 
-Results like
+It will print results like
 ```
 snap/vlm/test_finetune/glueepoch_checkpoint-epoch0019
      RTE    MRPC   STS-B    CoLA   SST-2    QNLI     QQP    MNLI MNLI-MM    GLUE
@@ -330,10 +350,21 @@ snap/vlm/bert_6L_512H_wiki103_sharedheadctr_noshuffle/glueepoch_checkpoint-epoch
 ```
 
 ### BERT (As baselines)
+We also provide pure language-model pre-training as baselines.
 
 #### Wiki103
 ```shell script
-bash scripts/small_vlm_wiki103_glue.bash 0,1,2,3 bert_small
+# bash scripts/small_wiki103.bash $GPUs $SNAP_NAME
+bash scripts/small_wiki103.bash 0,1,2,3 bert_small
+```
+It will run a BERT-6Layers-512Hiddens model on [wiki103](https://blog.einstein.ai/the-wikitext-long-term-dependency-language-modeling-dataset/)
+dataset with the maked language model only.
+The snapshot will be saved to `snap/bert/wiki103_bert_small`.
+
+Or you could direclty using the script `small_wiki103_glue.bash` to 
+enable GLUE evaluation after finishing pre-training.
+```shell script
+bash scripts/small_wiki103_glue.bash 0,1,2,3 bert_small
 ```
 
 
