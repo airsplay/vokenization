@@ -46,7 +46,7 @@ The terminology "Contextual" emphasize the nature that the sentences (the contex
     wget https://nlp.cs.unc.edu/data/lxmert_data/lxmert/mscoco_minival.json -P data/lxmert/
     ```
 
-### Training The Cross-Modal Matching Model
+### Training the Cross-Modal Matching Model
 The model has a wide range support of different visn/lang backbones. 
 For visual backbones, the models in torchvision are mostly supported. You might need to handle the last FC layer, 
 because it is written differently in different backbones.
@@ -77,7 +77,7 @@ Extracting Image Features-----> Benchmakring the Matching Models (Optional) --> 
 Downloading Language Data --> Tokenization -->-->--/
 ```
 
-### Downloading and Pre-processing Pure-Language Data 
+### Downloading and Pre-Processing Pure-Language Data 
 We provide scripts to get the datasets "wiki103" and "wiki".
 We would note them as "XX-cased" or "XX-uncased" where the suffix "cased" / "uncased" only indicates
 the property of the raw text.
@@ -127,13 +127,18 @@ Commands:
     ```
 2. English Wikipedia ()
     ```shell script
-    bash vokenization/tokenization/tokenize_wiki103_bert.bash 
+    bash vokenization/tokenization/tokenize_wiki_bert.bash 
     ```
 
 ### Extracting Image Features
 The image pre-processing extracts the image features to build the keys in the vokenization retrieval process.
 
 #### Download the Visual Genome (VG) images
+Since MS COCO images are used in training the cross-modal matching model
+as in [xmatching](#contextualized-cross-modal-matching-xmatching).
+We will use the [Visual Genome](https://visualgenome.org/) images as 
+candidate vokens for retrievel.
+We here download the images first.
 ```shell script
 wget https://cs.stanford.edu/people/rak248/VG_100K_2/images.zip -P data/vg/
 wget https://cs.stanford.edu/people/rak248/VG_100K_2/images2.zip -P data/vg/
@@ -231,6 +236,11 @@ Commands
 
 ## Visually-Supervised Language Model (vlm)
 
+### Test the Running
+```shell script
+bash scripts/small_wiki103.bash 0,1 bert_small
+```
+
 ### RoBERTa Pre-Training
 
 ### GLUE Fine-Tuning
@@ -244,6 +254,37 @@ Run GLUE on GPU 0 for 3 epochs, then using
 python CoL/show_glue_results.py
 ```
 to check the GLUE results.
+
+### BERT (As baselines)
+
+#### Wiki103
+```shell script
+bash scripts/small_vlm_wiki103_glue.bash 0,1,2,3 bert_small
+```
+
+
+### VLM
+
+#### Wiki103
+```shell script
+bash scripts/small_vlm_wiki103_glue.bash 0,1,2,3 bert_small
+```
+
+To support the mixed precision pre-training, please install the [nvidia/apex](https://github.com/NVIDIA/apex) library.
+```shell script
+git clone https://github.com/NVIDIA/apex
+cd apex
+pip install -v --no-cache-dir --global-option="--cpp_ext" --global-option="--cuda_ext" ./
+```
+After that, you could bring the option `--fp16` and `--fp16_opt_level O2` back in 
+the script `scripts/small_vlm_wiki103_glue.bash`.
+I recommend to use `--fp16_opt_level O2`.
+Although the option O2 might be [unstable](https://github.com/NVIDIA/apex/issues/818#issuecomment-639012282),
+it saves memory.
+The per-gpu-batch-size is 32 with O1 but 64 with O2.
+
+
+
 
 #### Evaluate multiple checkpoints
 
