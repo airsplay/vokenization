@@ -42,7 +42,7 @@ if [ ! -f $WIKI_PATH/bz2/enwiki-latest-pages-articles.xml.bz2 ]; then
 fi
 
 # extract and tokenize Wiki data
-cd $MAIN_PATH
+#cd $MAIN_PATH
 echo "*** Cleaning and tokenizing $lg Wikipedia dump ... ***"
 if [ ! -f $WIKI_PATH/txt/$lg.all.raw ]; then
   python $TOOLS_PATH/wikiextractor/WikiExtractor.py $WIKI_PATH/bz2/$WIKI_DUMP_NAME --processes 24 -q -o - \

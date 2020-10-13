@@ -3,8 +3,18 @@
 PyTorch code for the EMNLP 2020 paper "Vokenization: Improving Language Understanding with Contextualized, 
 Visual-Grounded Supervision".
 
+*Outline*
+* [Contextualized Cross-Modal Matching](#contextualized-cross-modal-matching-xmatching)
+* [Vokenization](#vokenization-vokenization)
+    * [Preparing Pure Language Data](#downloading-and-pre-processing-pure-language-data)
+    * [Extracting Visual Features](#extracting-image-features)
+    * [Vokenization Process](#the-vokenization-process)
+* [Visually-Supervised Language Model](#visually-supervised-language-model-vlm)
+    * [VLM Pre-training](#pre-training-with-vlm)
+    * [GLUE Evaluation](#glue-evaluation)
+    * [MLM Pre-training (as baselined)](#bert-as-baselines)
 
-## Preliminary
+## Installation
 ```shell script
 pip install -r requirements.txt
 ```
@@ -95,7 +105,8 @@ Downloading Language Data --> Tokenization -->-->--/
 We provide scripts to get the datasets "wiki103" and "wiki".
 We would note them as "XX-cased" or "XX-uncased" where the suffix "cased" / "uncased" only indicates
 the property of the raw text.
-1. **Wiki103**.
+1. **Wiki103**. The [wiki103](https://blog.einstein.ai/the-wikitext-long-term-dependency-language-modeling-dataset/) dataset
+is a seleted subset of English Wikipedia, containing around 100M tokens.
     ```shell script
     bash data/wiki103/get_data_cased.sh
     ```
@@ -103,6 +114,7 @@ the property of the raw text.
 The script to download and process wiki data are modified from [XLM](https://github.com/facebookresearch/XLM).
 It will download a 17G file. 
 The speed depends on the networking and it usually takes several hours to filter the data.
+The process ends with around 2.8B tokens.
     ```shell script
     bash data/wiki/get_data_cased.bash en
     ```
@@ -139,7 +151,7 @@ Commands:
     ```shell script
     bash vokenization/tokenization/tokenize_wiki103_bert.bash 
     ```
-2. English Wikipedia ()
+2. English Wikipedia (around 3 hours)
     ```shell script
     bash vokenization/tokenization/tokenize_wiki_bert.bash 
     ```
@@ -199,6 +211,7 @@ python vokenization/build_image_orders.py
 Extract image features regarding the list built above, using code `vokenization/extract_vision_keys.py`. 
 The code will first read the image ids saved in `data/vokenization/images/{IMAGE_SET}_ids.txt` and locate the images.
 The features will be saved under `snap/xmatching/bert_resnext/keys/{IMAGE_SET}.hdf5`.
+It finishes within 1 hour.
 
 Commands:
 ```bash
@@ -231,7 +244,6 @@ saved in `snap/xmatching/bert_resnext/keys/vg_nococo.hdf5`.
 
 
 > Note: `--tokenizer-name` must be provided in the script.
-> Moreover, please make sure that the tokens are extracted from [tokenization](#tokenization)
 
 
 Commands
@@ -381,3 +393,8 @@ bash scripts/small_wiki103_glue.bash 0,1,2,3 bert_small
 ```
 
 
+#### English Wikipedia
+```shell script
+# bash scripts/small_wiki103.bash $GPUs $SNAP_NAME
+bash scripts/small_wiki103.bash 0,1,2,3 bert_small
+```
