@@ -3,6 +3,10 @@
 PyTorch code for the EMNLP 2020 paper "Vokenization: Improving Language Understanding with Contextualized, 
 Visual-Grounded Supervision".
 
+> Note: I recommend to focus on "Wiki103" first and 
+> ingore the code blocks related to "English Wikipedia".
+> "Eng Wiki" might take too long to complete.
+
 **Outline**
 * [Contextualized Cross-Modal Matching](#contextualized-cross-modal-matching-xmatching)
     * [Downloading Image and Captioning Data](#download-image-and-captioning-data)
@@ -15,6 +19,7 @@ Visual-Grounded Supervision".
     * [VLM Pre-training](#pre-training-with-vlm)
     * [GLUE Evaluation](#glue-evaluation)
     * [MLM Pre-training (as baselined)](#bert-as-baselines)
+    
 
 ## Installation
 ```shell script
@@ -205,7 +210,7 @@ The image ids are saved under `{LOCAL_DIR}/images` with format `{IMAGE_SET}_ids.
 Commands:
 ```bash
 # Step 1, Build image orders.
-python vokenization/build_image_orders.py  
+python vokenization/create_image_ids.py  
 ```
 
 #### Extracting Image Features
