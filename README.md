@@ -259,13 +259,13 @@ saved in `snap/xmatching/bert_resnext/keys/vg_nococo.hdf5`.
 
 
 Commands
-1. Wiki103
+1. Wiki103 (around 1 hour on 4 Titan V)
     ```shell script
     # Note: mp is the abbreviation for "multi-processing"
     # bash scripts/mpvokenize_wiki103.bash $USE_GPUS $SNAP_NAME
     bash scripts/mpvokenize_wiki103.bash 0,1,2,3 bert_resnext
     ```
-2. English Wikipedia
+2. English Wikipedia (around 1 day on 4 Titan V)
     ```shell script
     # bash scripts/mpvokenize_wiki.bash $USE_GPUS $SNAP_NAME
     bash scripts/mpvokenize_wiki.bash 0,1,2,3 bert_resnext
@@ -293,7 +293,7 @@ It will run a BERT-6Layers-512Hiddens model on [wiki103](https://blog.einstein.a
 dataset with the support of voken supervisions.
 The snapshot will be saved to `snap/vlm/wiki103_bert_small`.
 We recommend to run this Wiki103 experiment first since it will finish 
-in a reasonable time (half a day).
+in a reasonable time (20 hours).
 The pure BERT pre-training option is also available [later](#bert-as-baselines)
 for comparisons.
 
