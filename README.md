@@ -7,14 +7,15 @@ Visual-Grounded Supervision" ([Hao Tan](https://www.cs.unc.edu/~airsplay/) and [
 * [Contextualized Cross-Modal Matching](#contextualized-cross-modal-matching-xmatching)
     * [Downloading Image and Captioning Data](#download-image-and-captioning-data)
     * [Model Training](#training-the-cross-modal-matching-model)
+    * [Benchmark (Optional)](#benchmarking-cross-modal-matching-models-optional)
 * [Vokenization](#vokenization-vokenization)
-    * [Preparing Pure Language Data](#downloading-and-pre-processing-pure-language-data)
-    * [Extracting Visual Features](#extracting-image-features)
+    * [Downloading Pure-Language Data](#downloading-and-pre-processing-pure-language-data)
+    * [Extracting Visual Feature](#extracting-image-features)
     * [Vokenization Process](#the-vokenization-process)
 * [Visually-Supervised Language Model](#visually-supervised-language-model-vlm)
     * [VLM Pre-training](#pre-training-with-vlm)
     * [GLUE Evaluation](#glue-evaluation)
-    * [MLM Pre-training (as baselined)](#bert-as-baselines)
+    * [MLM Pre-training (as baselines)](#bert-as-baselines)
     
 > Note: I recommend to focus on "Wiki103" first and 
 > ingore the code blocks related to "English Wikipedia".
@@ -28,10 +29,13 @@ pip install -r requirements.txt
 Require python 3.6 + (to support huggingface [transformers](https://github.com/huggingface/transformers)).
 
 ## Contextualized Cross-Modal Matching (xmatching)
-In this module (corresponding to Sec 3.2 of the paper), 
-we mainly want to learn a matching model, 
-which "Contextually" measure the alignment between words and images. 
-The terminology "Contextual" emphasize the nature that the sentences (the context) are also taken into consideration.
+In this [module](xmatching) (corresponding to Sec 3.2 of the paper), 
+we want to learn a token-image matching model from sentence-image aligned data (i.e., image captioning data).
+The model "contextually" measures the relevance between tokens (i.e., words) and images.
+The terminology "contextual" emphasize the nature that 
+the sentences (the context) are considered
+when measuring the token-image relevance score.
+
 
 ### Download Image and Captioning Data
 1. Download MS COCO images:
@@ -161,11 +165,11 @@ Each line has a range "line[i]" to "line[i+1]" in the hdf5 file.
 Commands:
 1. Wiki103 (around 10 min)
     ```shell script
-    bash vokenization/tokenization/tokenize_wiki103_bert.bash 
+    bash tokenization/tokenize_wiki103_bert.bash 
     ```
 2. English Wikipedia (around 3 hours)
     ```shell script
-    bash vokenization/tokenization/tokenize_wiki_bert.bash 
+    bash tokenization/tokenize_wiki_bert.bash 
     ```
 
 ### Extracting Image Features
@@ -199,16 +203,17 @@ data
 ```
     
 #### Build Universal Image Ids
-We first build a list of image indexes with `vokenization/create_image_ids.py`. 
+We first build a list of universal image indexes with 
+[vokenization/create_image_ids.py](vokenization/create_image_ids.py). 
 It is used to unify the image ids in different experiments 
 thus the feature array stored in hdf5 could be universally indexed.
-The image ids are saved under a shared path called `LOCAL_DIR` (default to `data/vokenization`)
- defined in `vokenization/common.py`.
-The path is used to save meta info for the retrieval and we will make sure all the experiments agree with this meta info,
+The image ids are saved under a shared path `LOCAL_DIR` (default to `data/vokenization`)
+ defined in [vokenization/common.py](vokenization/common.py).
+The image ids are saved under `data/vokenization/images` with format `{IMAGE_SET}_ids.txt`.
+We will make sure that all the experiments agree with this meta info,
 so that we would not get different indexing in different retrieval experiments.
-The image ids are saved under `{LOCAL_DIR}/images` with format `{IMAGE_SET}_ids.txt`.
 
-> Note: The ids created by `create_image_ids.py` are only the order of the images.
+> Note: The ids created by [create_image_ids.py](vokenization/create_image_ids.py) are only the order of the images.
 > The actual images in the dictionary are provided by `extract_keys.bash`, thus is corresponding to the 
 > `_paths.txt`, because the `extract_keys` will filter all broken images and non-existing images.
 
@@ -220,7 +225,8 @@ python vokenization/create_image_ids.py
 
 #### Extracting Image Features
 
-Extract image features regarding the list built above, using code `vokenization/extract_vision_keys.py`. 
+Extract image features regarding the list built above, using code 
+[vokenization/extract_vision_keys.py](vokenization/extract_vision_keys.py). 
 The code will first read the image ids saved in `data/vokenization/images/{IMAGE_SET}_ids.txt` and locate the images.
 The features will be saved under `snap/xmatching/bert_resnext/keys/{IMAGE_SET}.hdf5`.
 It finishes within 1 hour.
@@ -238,6 +244,16 @@ bash scripts/extract_keys.bash 0 bert_resnext
 
 We benchmark the performance of cross-modal matching models from large scale.
 The evaluation includes two different metrics: diversity and the retrieval performance.
+
+Diversity 
+(in [vokenization/evaluate_diversity.py](vokenization/evaluate_diversity.py))
+ensures that the same [token type](https://arxiv.org/pdf/1902.06006.pdf)
+is mapped to diverse images regarding its context (i.e., the sentence).
+Retrieval 
+(in [vokenization/evaluate_retrieval.py](vokenization/evaluate_retrieval.py)) 
+measures the correspondence of the token and the retrieved images.
+
+We gather these two utils into one script and the command here:
 ```bash
 bash scripts/xmatching_benchmark.bash 0 bert_resnext
 ```
@@ -271,6 +287,12 @@ Commands
     bash scripts/mpvokenize_wiki.bash 0,1,2,3 bert_resnext
     ```
 
+> The script will call
+> [vokenization/vokenize_corpus_mp.py](vokenization/vokenize_corpus_mp.py)
+> to vokenize a corpus. 
+> The vokenziation happens in [vokenization/vokenization.py](vokenization/vokenization.py) and
+> it use [vokenization/indexing.py](vokenization/indexing.py) to do nearest neighbor search
+> (based on [faiss](https://github.com/facebookresearch/faiss)).
 
 
 ## Visually-Supervised Language Model (vlm)
@@ -289,7 +311,9 @@ we could run the model with command:
 # bash scripts/small_vlm_wiki103_glue.bash $GPUs $SNAP_NAME
 bash scripts/small_vlm_wiki103.bash 0,1,2,3 wiki103_bert_small
 ```
-It will run a BERT-6Layers-512Hiddens model on [wiki103](https://blog.einstein.ai/the-wikitext-long-term-dependency-language-modeling-dataset/)
+It will call 
+[vlm/run_vlm_distributed.py](vlm/run_vlm_distributed.py)
+and run a BERT-6Layers-512Hiddens model on [wiki103](https://blog.einstein.ai/the-wikitext-long-term-dependency-language-modeling-dataset/)
 dataset with the support of voken supervisions.
 The snapshot will be saved to `snap/vlm/wiki103_bert_small`.
 We recommend to run this Wiki103 experiment first since it will finish 
@@ -396,7 +420,9 @@ We also provide pure language-model pre-training as baselines.
 # bash scripts/small_wiki103.bash $GPUs $SNAP_NAME
 bash scripts/small_wiki103.bash 0,1,2,3 bert_small
 ```
-It will run a BERT-6Layers-512Hiddens model on [wiki103](https://blog.einstein.ai/the-wikitext-long-term-dependency-language-modeling-dataset/)
+It will call 
+[vlm/run_lm_distributed.py](vlm/run_lm_distributed.py)
+and run a BERT-6Layers-512Hiddens model on [wiki103](https://blog.einstein.ai/the-wikitext-long-term-dependency-language-modeling-dataset/)
 dataset with the masked language model only.
 The snapshot will be saved to `snap/bert/wiki103_bert_small`.
 
@@ -436,6 +462,6 @@ We thank the reviewers and [Yixin Nie](https://easonnie.github.io/)
 and [Jie Lei](https://www.cs.unc.edu/~jielei/)
 for their helpful discussions.
 Part of the code are built based on huggingface [transformers](https://github.com/huggingface/transformers) and 
-facebook [xlm](https://github.com/facebookresearch/XLM).
+facebook [xlm](https://github.com/facebookresearch/XLM) and [faiss](https://github.com/facebookresearch/faiss).
 
 4K3.
