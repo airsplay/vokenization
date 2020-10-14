@@ -432,7 +432,7 @@ def train(args, train_dataset: CoLDataset, valid_dataset: CoLDataset,
             # torch.cuda.empty_cache()
             # torch.distributed.barrier()
         else:
-            # pass
+            pass
             # torch.cuda.empty_cache()
             # torch.distributed.barrier()
 
