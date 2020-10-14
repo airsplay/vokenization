@@ -3,10 +3,6 @@
 PyTorch code for the EMNLP 2020 paper "Vokenization: Improving Language Understanding with Contextualized, 
 Visual-Grounded Supervision".
 
-> Note: I recommend to focus on "Wiki103" first and 
-> ingore the code blocks related to "English Wikipedia".
-> "Eng Wiki" might take too long to complete.
-
 **Outline**
 * [Contextualized Cross-Modal Matching](#contextualized-cross-modal-matching-xmatching)
     * [Downloading Image and Captioning Data](#download-image-and-captioning-data)
@@ -20,6 +16,9 @@ Visual-Grounded Supervision".
     * [GLUE Evaluation](#glue-evaluation)
     * [MLM Pre-training (as baselined)](#bert-as-baselines)
     
+> Note: I recommend to focus on "Wiki103" first and 
+> ingore the code blocks related to "English Wikipedia".
+> "Eng Wiki" might take too long to complete.
 
 ## Installation
 ```shell script
@@ -130,6 +129,10 @@ The process ends with around 2.8B tokens.
     ```shell script
     bash data/wiki/get_data_cased_untokenized.bash en
     ```
+   
+> Note: I recommend to focus on "Wiki103" first and 
+> ingore the code blocks related to "English Wikipedia".
+> "Eng Wiki" might take too long to complete.
    
 ### Tokenization of Language Data
 We next tokenize the language corpus.
