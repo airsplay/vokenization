@@ -25,6 +25,8 @@ Visual-Grounded Supervision" ([Hao Tan](https://www.cs.unc.edu/~airsplay/) and [
 pip install -r requirements.txt
 ```
 
+Require python 3.6 + (to support huggingface [transformers](https://github.com/huggingface/transformers)).
+
 ## Contextualized Cross-Modal Matching (xmatching)
 In this module (corresponding to Sec 3.2 of the paper), 
 we mainly want to learn a matching model, 
@@ -297,13 +299,13 @@ for comparisons.
 
 Note: defautly, the mixed-precision training is not used.
 To support the mixed precision pre-training, 
-please install the [nvidia/apex](https://github.com/NVIDIA/apex) library.
+please install the [nvidia/apex](https://github.com/NVIDIA/apex) library with command:
 ```shell script
 git clone https://github.com/NVIDIA/apex
 cd apex
 pip install -v --no-cache-dir --global-option="--cpp_ext" --global-option="--cuda_ext" ./
 ```
-After that, you could bring the option `--fp16` and `--fp16_opt_level O2` back in 
+After that, you could bring back the option `--fp16` and `--fp16_opt_level O2` in 
 the script `scripts/small_vlm_wiki103.bash`.
 I recommend to use `--fp16_opt_level O2`.
 Although the option O2 might be [unstable](https://github.com/NVIDIA/apex/issues/818#issuecomment-639012282),

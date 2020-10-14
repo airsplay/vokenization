@@ -430,11 +430,11 @@ def train(args, train_dataset: CoLDataset, valid_dataset: CoLDataset,
                 json.dump(results, open(output_eval_file, 'w'), sort_keys=True, indent=4)
             # Currently, only GPU 0 is responsible for the evaluation.
             # torch.cuda.empty_cache()
-            torch.distributed.barrier()
+            # torch.distributed.barrier()
         else:
             # pass
             # torch.cuda.empty_cache()
-            torch.distributed.barrier()
+            # torch.distributed.barrier()
 
         if args.max_steps > 0 and global_step >= args.max_steps:
             epoch_iterator.close()
