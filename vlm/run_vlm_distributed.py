@@ -397,10 +397,11 @@ def train(args, train_dataset: CoLDataset, valid_dataset: CoLDataset,
             # Save checkpoints
             checkpoint_name = "checkpoint-epoch%04d" % epoch
             save_model(args, checkpoint_name, model, tokenizer, optimizer, scheduler)
-            last_path = os.path.join(args.output_dir, 'checkpoint-last')
-            if os.path.exists(last_path):
-                os.remove(last_path)
-            os.symlink(os.path.join(args.output_dir, checkpoint_name), last_path)
+
+            # last_path = os.path.join(args.output_dir, 'checkpoint-last')
+            # if os.path.exists(last_path):
+            #     os.remove(last_path)
+            # os.symlink(os.path.join(args.output_dir, checkpoint_name), last_path)
 
             # Evaluate the model
             for loss_idx, loss_name in enumerate(LOSS_NAMES):
