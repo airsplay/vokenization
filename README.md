@@ -1,7 +1,7 @@
 # Vokenization
 
 PyTorch code for the EMNLP 2020 paper "Vokenization: Improving Language Understanding with Contextualized, 
-Visual-Grounded Supervision".
+Visual-Grounded Supervision" ([Hao Tan](https://www.cs.unc.edu/~airsplay/) and [Mohit Bansal](https://www.cs.unc.edu/~mbansal/)).
 
 **Outline**
 * [Contextualized Cross-Modal Matching](#contextualized-cross-modal-matching-xmatching)
@@ -321,8 +321,8 @@ It will run a BERT-12Layers-768Hiddens (same as BERT_BASE) model on the English 
 dataset with the support of voken supervisions.
 The snapshot will be saved to `snap/vlm/wiki_bert_base`.
 
-It takes around 3~5 days on 4 Titan V / GTX 2080
-and around 5~7 days to finish in 4 Titan Pascal/T4 cards.
+It takes around 3-5 days on 4 Titan V / GTX 2080
+and around 5-7 days to finish in 4 Titan Pascal/T4 cards.
 (This estimation is accurate since I inevitably run experiments on all these servers...).
 Titan V / 2080 / T4 have native support of mixed precision training (triggered by `--fp16` option and need
 installing [apex](https://github.com/NVIDIA/apex)).
@@ -415,3 +415,25 @@ With GLUE evaluation:
 ```shell script
 bash scripts/base_wiki_glue.bash 0,1,2,3 bert_wiki
 ```
+
+## Reference
+If you find our project useful, please cite this paper:
+```
+@inproceedings{tan2020vokenization,
+  title={Vokenization: Improving Language Understanding with Contextualized, 
+Visual-Grounded Supervision},
+  author={Tan, Hao and Bansal, Mohit},
+  booktitle={Proceedings of the 2020 Conference on Empirical Methods in Natural Language Processing},
+  year={2020}
+}
+```
+
+## Acknowledgement
+I thank the support from [Bloomberg Data Science Ph.D. Fellowship](https://www.techatbloomberg.com/bloomberg-data-science-ph-d-fellowship/).
+We thank the reviewers and [Yixin Nie](https://easonnie.github.io/) 
+and [Jie Lei](https://www.cs.unc.edu/~jielei/)
+for their helpful discussions.
+Part of the code are built based on huggingface [transformers](https://github.com/huggingface/transformers) and 
+facebook [xlm](https://github.com/facebookresearch/XLM).
+
+4K3.
