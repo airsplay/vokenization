@@ -456,6 +456,7 @@ Visual-Grounded Supervision},
 
 ## Acknowledgement
 I thank the support from [Bloomberg Data Science Ph.D. Fellowship](https://www.techatbloomberg.com/bloomberg-data-science-ph-d-fellowship/).
+We thank ARO-YIP Award W911NF-18-1-0336, DARPA MCS Grant N66001-19-2-4031, and Google Focused Research Award. 
 We thank the reviewers and [Yixin Nie](https://easonnie.github.io/) 
 and [Jie Lei](https://www.cs.unc.edu/~jielei/)
 for their helpful discussions.
