@@ -1,7 +1,7 @@
 # Vokenization
 
-PyTorch code for the EMNLP 2020 paper "Vokenization: Improving Language Understanding with Contextualized, 
-Visual-Grounded Supervision" ([Hao Tan](https://www.cs.unc.edu/~airsplay/) and [Mohit Bansal](https://www.cs.unc.edu/~mbansal/)).
+PyTorch code for the EMNLP 2020 paper "[Vokenization: Improving Language Understanding with Contextualized, 
+Visual-Grounded Supervision](https://arxiv.org/pdf/2010.06775.pdf)" (Hao Tan and Mohit Bansal).
 
 **Outline**
 * [Contextualized Cross-Modal Matching](#contextualized-cross-modal-matching-xmatching)
@@ -29,7 +29,7 @@ pip install -r requirements.txt
 Require python 3.6 + (to support huggingface [transformers](https://github.com/huggingface/transformers)).
 
 ## Contextualized Cross-Modal Matching (xmatching)
-In this [module](xmatching) (corresponding to Sec 3.2 of the paper), 
+In this [module](xmatching) (corresponding to Sec 3.2 of the [paper](https://arxiv.org/pdf/2010.06775.pdf)), 
 we want to learn a token-image matching model from sentence-image aligned data (i.e., image captioning data).
 The model "contextually" measures the relevance between tokens (i.e., words) and images.
 The terminology "contextual" emphasize the nature that 
@@ -71,7 +71,7 @@ when measuring the token-image relevance score.
     ```
 
 ### Training the Cross-Modal Matching Model
-The model is trained on MS COCO with pairwise hinge loss (details in Sec. 3.2 of the paper).
+The model is trained on MS COCO with pairwise hinge loss (details in Sec. 3.2 of the [paper](https://arxiv.org/pdf/2010.06775.pdf)).
 
 Running Commands:
 ```bash
@@ -298,11 +298,9 @@ Commands
 ## Visually-Supervised Language Model (vlm)
 
 ### Pre-Training with VLM
-As discussed in Sec. 2 of the paper,
-we use visually-supervised language model to pre-train the model 
+As discussed in Sec. 2 of the [paper](https://arxiv.org/pdf/2010.06775.pdf),
+we use previous generated vokens to pre-train the model 
 with visual supervision.
-The visual supervision comes from the previous 
-vokenization process.
 
 #### Wiki103 
 After the [vokenization process](#the-vokenization-process) of wiki103,
