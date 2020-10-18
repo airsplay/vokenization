@@ -75,9 +75,9 @@ def process_args():
     parser.add_argument("--voken_feat_dir", type=str, default=None,
                         help='Where the vokens are saved')
     parser.add_argument("--do_voken_cls", action='store_true', help='Will do voken classification task')
-    parser.add_argument("--do_voken_reg", action='store_true', help='Will do voken regression task')
-    parser.add_argument("--do_voken_ctr", action='store_true', help='Will do voken regression task')
-    parser.add_argument("--shared_head", action='store_true', help='Will do voken regression task')
+    parser.add_argument("--do_voken_reg", action='store_true', help='Will do voken regression task (not used in this paper)')
+    parser.add_argument("--do_voken_ctr", action='store_true', help='Will do voken contrastive task (not used in this paper)')
+    parser.add_argument("--shared_head", action='store_true', help='Share the head if more than one tasks (e.g., cls, reg, ctr) are used (not used in this paper)')
 
     # Batch Size and Training Steps
     parser.add_argument("--seed", type=int, default=95, help="random seed for initialization")

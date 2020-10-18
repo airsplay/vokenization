@@ -24,7 +24,7 @@ CUDA_VISIBLE_DEVICES=$GPUS unbuffer python vlm/run_lm_distributed.py \
 	--per_gpu_train_batch_size=64 \
     --per_gpu_eval_batch_size=64 \
 	--gradient_accumulation_steps=1 \
-    --max_steps 200000 \
+    --max_steps 220000 \
 	--learning_rate=2e-4 \
 	--weight_decay=0.01 \
 	--warmup_steps=5000 \
