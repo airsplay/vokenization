@@ -442,6 +442,30 @@ With GLUE evaluation:
 bash scripts/base_wiki_glue.bash 0,1,2,3 bert_wiki
 ```
 
+## Pre-processed Data and Pre-trained Models
+### Data
+
+Wiki103 (100M tokens)
+```
+mkdir -p data/wiki103-cased
+wget  https://nlp.cs.unc.edu/data/vokenization/wiki103-cased/wiki.test.raw.bert-base-uncased.hdf5 -P data/wiki103-cased
+wget https://nlp.cs.unc.edu/data/vokenization/wiki103-cased/wiki.train.raw.bert-base-uncased.hdf5 -P data/wiki103-cased
+wget https://nlp.cs.unc.edu/data/vokenization/wiki103-cased/wiki.valid.raw.bert-base-uncased.hdf5 -P data/wiki103-cased
+```
+
+Wiki (2800 M tokens)
+```
+mkdir -p data/wiki-cased
+wget  https://nlp.cs.unc.edu/data/vokenization/wiki-cased/en.test.raw.bert-base-uncased.hdf5 -P data/wiki-cased
+wget  https://nlp.cs.unc.edu/data/vokenization/wiki-cased/en.train.raw.bert-base-uncased.hdf5 -P data/wiki-cased
+wget  https://nlp.cs.unc.edu/data/vokenization/wiki-cased/en.valid.raw.bert-base-uncased.hdf5 -P data/wiki-cased
+```
+
+### Models
+- BERT (on Wiki): [https://nlp.cs.unc.edu/data/vokenization/bert_12L_768H_wiki.zip](https://nlp.cs.unc.edu/data/vokenization/bert_12L_768H_wiki.zip)
+- BERT + VLM (on Wiki): [https://nlp.cs.unc.edu/data/vokenization/vlm_12L_768H_wiki.zip](https://nlp.cs.unc.edu/data/vokenization/vlm_12L_768H_wiki.zip)
+- RoBERTa + VLM (on Wiki): [https://nlp.cs.unc.edu/data/vokenization/vlm_roberta_12L_768H_wiki.zip](https://nlp.cs.unc.edu/data/vokenization/vlm_roberta_12L_768H_wiki.zip)
+
 ## Reference
 If you find our project useful, please cite this paper:
 ```
