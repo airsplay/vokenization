@@ -16,23 +16,20 @@ Visual-Grounded Supervision](https://arxiv.org/pdf/2010.06775.pdf)" (Hao Tan and
     * [VLM Pre-training](#pre-training-with-vlm)
     * [GLUE Evaluation](#glue-evaluation)
     * [MLM Pre-training (as baselines)](#bert-as-baselines)
-    
-> Note: I recommend to focus on "Wiki103" first and 
-> ingore the code blocks related to "English Wikipedia".
-> "Eng Wiki" might take too long to complete.
 
 ## Installation
 ```shell script
 pip install -r requirements.txt
 ```
 
-Require python 3.6 + (to support huggingface [transformers](https://github.com/huggingface/transformers)).
+## Requirements 
+Python >= 3.6 (to support huggingface [transformers](https://github.com/huggingface/transformers)).
 
 ## Contextualized Cross-Modal Matching (xmatching)
 In this [module](xmatching) (corresponding to Sec 3.2 of the [paper](https://arxiv.org/pdf/2010.06775.pdf)), 
 we want to learn a token-image matching model from sentence-image aligned data (i.e., image captioning data).
 The model "contextually" measures the relevance between tokens (i.e., words) and images.
-The terminology "contextual" emphasize the nature that 
+The terminology "contextual" emphasizes the nature in which 
 the sentences (the context) are considered
 when measuring the token-image relevance score.
 
@@ -47,7 +44,7 @@ when measuring the token-image relevance score.
     unzip data/mscoco/train2014.zip -d data/mscoco/images/ && rm data/mscoco/train2014.zip
     unzip data/mscoco/val2014.zip -d data/mscoco/images/ && rm data/mscoco/val2014.zip
     ```
-   If you already have COCO image on disk. Save them as 
+   If you already have COCO images on disk. Save them as 
     ```
     data
       |-- mscoco
@@ -79,7 +76,7 @@ Running Commands:
 # "0,1" indicates using the GPUs 0 and 1.
 # "bert_resnext" is the name of this snapshot and would be saved at snap/xmatching/bert_resnext
 # "--visn resnext101_32x8d" is the vision backbone
-# "--lang bert" is the langaugae backbone
+# "--lang bert" is the language backbone
 # Speed: 20 min ~ 30 min / 1 Epoch, 20 Epochs by default.
 bash scripts/run_xmatching.bash 0,1 bert_resnext --visn resnext101_32x8d --lang bert
 ```
@@ -93,7 +90,7 @@ VISN_MODEL={resnet18, resnet34, resnet50, resnet101, resnet152,
 LANG_MODEL={bert, roberta, xlnet, bert-large, ...}
 ```
 For visual backbones, the models in [torchvision](https://pytorch.org/docs/stable/torchvision/models.html) are mostly supported.
-You might need to handle the last FC layer, because it is written differently in different backbones.
+You might need to handle the last fully connected (FC) layer, because it is written differently in different backbones.
 The language backbones are initialized from huggingface [transformers](https://github.com/huggingface/transformers).
 
 > We found that the results with XLNet is pretty low but have not identified 
@@ -101,15 +98,15 @@ The language backbones are initialized from huggingface [transformers](https://g
 
 ## Vokenization (vokenization)
 The vokenization is a bridge between the cross-modality (words-and-image) matching models (xmatching) and 
-visually-supervised lagnauge models (vlm).
+visually-supervised language models (vlm).
 The final goal is to convert the language tokens to related images 
 (we called them **vokens**).
 These **vokens** enable the visual supervision of the language model.
-We mainly provide pr-eprocessing tools (i.e., feature extraction, tokenization, and vokenization) and
+We mainly provide pre-processing tools (i.e., feature extraction, tokenization, and vokenization) and
 evaluation tools of previous cross-modal matching models here.
 Here is a diagram of these processes and we next discuss them one-by-one:
 ```
-Extracting Image Features-----> Benchmakring the Matching Models (Optional) --> Vokenization
+Extracting Image Features-----> Benchmarking the Matching Models (Optional) --> Vokenization
 Downloading Language Data --> Tokenization -->-->--/
 ```
 
@@ -155,9 +152,9 @@ data
         |-- wiki.train.raw.bert-base-uncased.hdf5
         |-- wiki.train.raw.bert-base-uncased.line
 ```
-The txt file `wiki.train.raw.bert-base-uncased` saves the tokens and each line in this file is the tokens of a line 
+The txt file `wiki.train.raw.bert-base-uncased` saves the tokens and each line in this file corresponds to the tokens of a line 
 in the original file,
-The hdf5 file `wiki.train.raw.bert-base-uncased.hdf5` stores all the tokens continuously and use
+The hdf5 file `wiki.train.raw.bert-base-uncased.hdf5` stores all the tokens continuously and uses
 `wiki.train.raw.bert-base-uncased.line` to index the starting token index of each line.
 The ".line" file has `L+1` lines where `L` is the number of lines in the original files.
 Each line has a range "line[i]" to "line[i+1]" in the hdf5 file.
@@ -179,8 +176,8 @@ The image pre-processing extracts the image features to build the keys in the vo
 Since MS COCO images are used in training the cross-modal matching model
 as in [xmatching](#contextualized-cross-modal-matching-xmatching).
 We will use the [Visual Genome](https://visualgenome.org/) images as 
-candidate vokens for retrievel.
-We here download the images first.
+candidate vokens for retrieval.
+Here, we download the images first.
 ```shell script
 wget https://cs.stanford.edu/people/rak248/VG_100K_2/images.zip -P data/vg/
 wget https://cs.stanford.edu/people/rak248/VG_100K_2/images2.zip -P data/vg/
@@ -192,7 +189,7 @@ mv VG_100K_2/* .
 rm -rf VG_100K VG_100K_2
 cd ../../../
 ```
-If you already have Visual Genome image on disk. Save them as 
+If you already have Visual Genome images on disk. Save them as 
 ```
 data
 |-- vg
@@ -207,7 +204,7 @@ We first build a list of universal image indexes with
 [vokenization/create_image_ids.py](vokenization/create_image_ids.py). 
 It is used to unify the image ids in different experiments 
 thus the feature array stored in hdf5 could be universally indexed.
-The image ids are saved under a shared path `LOCAL_DIR` (default to `data/vokenization`)
+The image ids are saved under a shared path `LOCAL_DIR` (defaults to `data/vokenization`)
  defined in [vokenization/common.py](vokenization/common.py).
 The image ids are saved under `data/vokenization/images` with format `{IMAGE_SET}_ids.txt`.
 We will make sure that all the experiments agree with this meta info,
@@ -290,8 +287,8 @@ Commands
 > The script will call
 > [vokenization/vokenize_corpus_mp.py](vokenization/vokenize_corpus_mp.py)
 > to vokenize a corpus. 
-> The vokenziation happens in [vokenization/vokenization.py](vokenization/vokenization.py) and
-> it use [vokenization/indexing.py](vokenization/indexing.py) to do nearest neighbor search
+> The vokenization happens in [vokenization/vokenization.py](vokenization/vokenization.py) and
+> it uses [vokenization/indexing.py](vokenization/indexing.py) to do nearest neighbor search
 > (based on [faiss](https://github.com/facebookresearch/faiss)).
 
 
@@ -299,7 +296,7 @@ Commands
 
 ### Pre-Training with VLM
 As discussed in Sec. 2 of the [paper](https://arxiv.org/pdf/2010.06775.pdf),
-we use previous generated vokens to pre-train the model 
+we use previously generated vokens to pre-train the model 
 with visual supervision.
 
 #### Wiki103 
@@ -319,7 +316,7 @@ in a reasonable time (20 hours).
 The pure BERT pre-training option is also available [later](#bert-as-baselines)
 for comparisons.
 
-Note: defautly, the mixed-precision training is not used.
+Note: By default, the mixed-precision training is not used.
 To support the mixed precision pre-training, 
 please install the [nvidia/apex](https://github.com/NVIDIA/apex) library with command:
 ```shell script
@@ -331,12 +328,12 @@ After that, you could bring back the option `--fp16` and `--fp16_opt_level O2` i
 the script `scripts/small_vlm_wiki103.bash`.
 I recommend to use `--fp16_opt_level O2`.
 Although the option O2 might be [unstable](https://github.com/NVIDIA/apex/issues/818#issuecomment-639012282),
-it saves a lot memory:
+it saves a lot of memory:
 the max per-gpu-batch-size is 32 with O1 but 64 with O2.
 
 #### English Wikipedia
 After the [vokenization process](#the-vokenization-process) of wiki103,
-we could run the model with command:
+we could run the model with the command:
 ```shell script
 # bash scripts/base_vlm_wiki.bash $GPUs $SNAP_NAME
 bash scripts/base_vlm_wiki.bash 0,1,2,3 wiki_bert_base
@@ -355,22 +352,22 @@ Titan Pascal would also save some memory with the `--fp16` option.
 
 
 ### GLUE Evaluation
-We defautly use the [GLUE](https://gluebenchmark.com/) benchmark
+We use the [GLUE](https://gluebenchmark.com/) benchmark by default
 (e.g., [SST](https://nlp.stanford.edu/sentiment/index.html),
 [MRPC](https://www.microsoft.com/en-us/download/details.aspx?id=52398),
 [QQP](https://www.quora.com/q/quoradata/First-Quora-Dataset-Release-Question-Pairs),
 [MNLI](https://cims.nyu.edu/~sbowman/multinli/),
 [QNLI](https://rajpurkar.github.io/SQuAD-explorer/),)
- as downstreaming tasks.
+ as downstream tasks.
 Other tasks could be evaluated following the setup [here](https://github.com/huggingface/transformers/tree/28d183c90cbf91e94651cf4a655df91a52ea1033/examples)
 by changing the option `--model_name_or_path` to the correct snapshot path `snap/bert/wiki103`.
 
 #### Download GLUE dataset
-This downloaindg scrip is copied from [huggingface transformers](https://github.com/huggingface/transformers/tree/master/examples/text-classification)
+This downloading script is copied from [huggingface transformers](https://github.com/huggingface/transformers/tree/master/examples/text-classification)
 project.
 Since the [transformers](https://github.com/huggingface/transformers) is still under dense
 development, the change of APIs might affect the code. 
-I have upgraded the code compaticability to transformers==3.3.
+I have upgraded the code compaticability to `transformers==3.3`.
 ```shell script
 wget https://raw.githubusercontent.com/huggingface/transformers/master/utils/download_glue_data.py
 python download_glue_data.py --data_dir data/glue --tasks all
@@ -379,7 +376,7 @@ python download_glue_data.py --data_dir data/glue --tasks all
 #### Finetuning on GLUE Tasks
 The pre-trained snapshots are evaluated by fine-tuning them on the [GLUE](https://gluebenchmark.com/) 
 benchmark.
-The code are modified from the huggingface [transformers](https://github.com/huggingface/transformers).
+The code is modified from the huggingface [transformers](https://github.com/huggingface/transformers).
 
 Running GLUE evaluation for snapshots from different epochs:
 ```bash
@@ -484,7 +481,5 @@ We thank ARO-YIP Award W911NF-18-1-0336, DARPA MCS Grant N66001-19-2-4031, and G
 We thank the reviewers and [Yixin Nie](https://easonnie.github.io/) 
 and [Jie Lei](https://www.cs.unc.edu/~jielei/)
 for their helpful discussions.
-Part of the code are built based on huggingface [transformers](https://github.com/huggingface/transformers) and 
+Parts of the code are built based on huggingface [transformers](https://github.com/huggingface/transformers) and 
 facebook [xlm](https://github.com/facebookresearch/XLM) and [faiss](https://github.com/facebookresearch/faiss).
-
-4K3.
