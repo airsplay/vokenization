@@ -462,6 +462,7 @@ wget  https://nlp.cs.unc.edu/data/vokenization/wiki-cased/en.valid.raw.bert-base
 ```
 
 ### Models
+- Cross-Modal Matching model: [https://nlp.cs.unc.edu/data/vokenization/coco_hinge05_dim64_resxt101_bertl4.zip](https://nlp.cs.unc.edu/data/vokenization/coco_hinge05_dim64_resxt101_bertl4.zip)
 - BERT (on Wiki): [https://nlp.cs.unc.edu/data/vokenization/bert_12L_768H_wiki.zip](https://nlp.cs.unc.edu/data/vokenization/bert_12L_768H_wiki.zip)
 - BERT + VLM (on Wiki): [https://nlp.cs.unc.edu/data/vokenization/vlm_12L_768H_wiki.zip](https://nlp.cs.unc.edu/data/vokenization/vlm_12L_768H_wiki.zip)
 - RoBERTa + VLM (on Wiki): [https://nlp.cs.unc.edu/data/vokenization/vlm_roberta_12L_768H_wiki.zip](https://nlp.cs.unc.edu/data/vokenization/vlm_roberta_12L_768H_wiki.zip)
@@ -480,7 +481,6 @@ Visual-Grounded Supervision},
 
 ## Acknowledgement
 I thank the support from [Bloomberg Data Science Ph.D. Fellowship](https://www.techatbloomberg.com/bloomberg-data-science-ph-d-fellowship/).
-We thank ARO-YIP Award W911NF-18-1-0336, DARPA MCS Grant N66001-19-2-4031, and Google Focused Research Award. 
 We thank the reviewers and [Yixin Nie](https://easonnie.github.io/) 
 and [Jie Lei](https://www.cs.unc.edu/~jielei/)
 for their helpful discussions.
